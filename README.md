@@ -17,4 +17,4 @@ An interesting test is to add different objects to the scene, and animate more p
 
 ## License
 
-See LICENCE.md
+See LICENCE
