@@ -8,7 +8,18 @@ import gzip
 import collections
 import numpy
 from six.moves import xrange
-import cv2
+
+# try:
+#     import cv2
+
+pck = ""
+
+try:
+    import cv2
+    pck = "cv2"
+except ImportError,e:
+    from PIL import Image
+    pck = "Image"
 
 from tensorflow.python.framework import dtypes
 
@@ -36,9 +47,6 @@ def split_data(data_index,data_dir,amount):
 
     total_l = len(lfiles)
     amount = int(total_l / 100 * int(amount))
-
-    print("Amount of dataset imported:")
-    print(amount)
 
     for idx,val in enumerate(lfiles):
 
@@ -77,6 +85,12 @@ def extract_saved_images(source):
     fnpy = numpy.load(f)
     return fnpy
 
+def load_image( infilename ) :
+    img = Image.open( infilename )
+    img.load()
+    data = numpy.asarray( img, dtype="int32" )
+    return data
+
 def imageProcessor(source,saved=False,dataname="stat"):
 
     if saved:
@@ -90,10 +104,12 @@ def imageProcessor(source,saved=False,dataname="stat"):
         for idx,fpath in enumerate(source['files']):
 
             # img = numpy.array(Image.open(fpath).convert('RGBA'))
-            # print(type(img))
-            # print(img.shape)
             # img = np.array(img)
-            img = cv2.imread(fpath)
+
+            if pck == "Image":
+                img = load_image(fpath)
+            else:
+                img = cv2.imread(fpath)
 
             # shape = (800,800,3)
             # type = numpy.ndarray
@@ -114,10 +130,6 @@ def imageProcessor(source,saved=False,dataname="stat"):
     width = raw_image_data[0].shape[0]
     height = raw_image_data[0].shape[1]
 
-    print("\n Extract images with shape:")
-    # No need to reshape, data is in right shape already:
-    print(raw_image_data.shape) # (50, 800, 800, 1)
-
     return raw_image_data
 
 
@@ -131,11 +143,6 @@ def labelProcessor(source):
 
     raw_labels = numpy.array(raw_labels)
     raw_labels.astype(numpy.float32)
-
-    print("\n Extract labels with shape: ")
-    print(raw_labels.shape)
-    #print(type(raw_labels))
-    #print(type(raw_labels[0]))
 
     return raw_labels
 
@@ -152,6 +159,7 @@ class DataSet(object):
             self._num_examples = 10000
             self.one_hot = one_hot
         else:
+
             assert images.shape[0] == labels.shape[0], ('images.shape: %s labels.shape: %s' % (images.shape, labels.shape))
             self._num_examples = images.shape[0]
 
@@ -231,7 +239,7 @@ class DataSet(object):
             return self._images[start:end], self._labels[start:end]
 
 
-def read_data_sets(data_dir,data_index,test,amount,saved=False,sfpath=False):
+def loadData(data_dir,data_index,test,amount,saved=False,sfpath=False):
 
     print("\n\n")
     print("Read data sets with:")
@@ -260,10 +268,10 @@ def read_data_sets(data_dir,data_index,test,amount,saved=False,sfpath=False):
         test_images = imageProcessor(test)
         test_labels = labelProcessor(test)
 
-    validation_images = train_images[:int(train_images/3*1)]
-    validation_labels = train_labels[:int(train_images/3*1)]
-    train_images = train_images[int(train_images/3*1):]
-    train_labels = train_labels[int(train_images/3*1):]
+    validation_images = train_images[:int(len(train_images)/3*1)]
+    validation_labels = train_labels[:int(len(train_images)/3*1)]
+    train_images = train_images[int(len(train_images)/3*1):]
+    train_labels = train_labels[int(len(train_images)/3*1):]
 
     train = DataSet(train_images, train_labels, dtype=dtype, reshape=reshape)
     validation = DataSet(validation_images,validation_labels,dtype=dtype,reshape=reshape)

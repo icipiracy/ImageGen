@@ -40,17 +40,17 @@ amount = sys.argv[4]
 saved = False
 sfpath = False
 
-if len(sys.argv) > 4:
-
-    print(len(sys.argv))
-
-    saved = sys.argv[5] # Wether the preprocessed data is loaded from a previously saved file.
-    sfpath = sys.argv[6] # File path to saved image data.
+# if len(sys.argv) > 4:
+#
+#     print(len(sys.argv))
+#
+#     saved = sys.argv[5] # Wether the preprocessed data is loaded from a previously saved file.
+#     sfpath = sys.argv[6] # File path to saved image data.
 
 def main():
 
     # Import png image data from 'ap_input_data' module:
-    inputData = input_data.read_data_sets(data_dir,data_index,test,amount,saved,sfpath)
+    inputData = input_data.loadData(data_dir,data_index,test,amount,saved,sfpath)
 
     # ImgInfo provides array with width,height and depth of image data:
     ImgInfo = inputData['imginfo']
